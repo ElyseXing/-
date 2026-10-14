@@ -1,4 +1,4 @@
-function odor_pretest_four_odor_rating()
+function odor_rating_20261014()
 % Rate four candidate odors on familiarity, valence, intensity, and lightness.
 % Requires Psychtoolbox and ett.m in this file's directory.
 
@@ -9,12 +9,11 @@ function odor_pretest_four_odor_rating()
     end
 
     odors = {'CAR', 'GUA', 'CIN', 'PV'};
-    defaultValves = {'2', '6', '1', '5'};
     valveLabels = {'CAR valve (check hardware)', 'GUA valve (check hardware)', ...
         'CIN valve (check hardware)', 'PV valve (check hardware)'};
     prompt = [{'Subject ID:', 'Age:', 'Gender:', ...
         'ETT serial port (e.g. COM3 or /dev/cu.xxx):'}, valveLabels];
-    defaults = [{'', '', '', 'COM3'}, defaultValves];
+    defaults = [{'', '', '', 'COM3'}, {'', '', '', ''}];
     answer = inputdlg(prompt, 'Four-odor pretest setup', [1 48], defaults);
     if isempty(answer)
         return;
@@ -81,7 +80,7 @@ function odor_pretest_four_odor_rating()
             completedTrials = trialIdx;
             writeRatingsCsv(outputFile, subjectId, ageText, gender, ...
                 trialOrder, ratings, completedTrials, 'InProgress');
-            fprintf('%s ratings: familiarity=%d, valence=%d, intensity=%d, lightness=%d\n', ...
+            fprintf('%s ratings: intensity=%d, valence=%d, lightness=%d, familiarity=%d\n', ...
                 odor, trialRatings(1), trialRatings(2), trialRatings(3), trialRatings(4));
 
             if trialIdx < numel(trialOrder)
@@ -121,7 +120,7 @@ end
 
 function showInstructions(window, continueKey, exitKey)
     text = sprintf(['本预实验将呈现 CAR、GUA、CIN、PV，每种气味两次。\n' ...
-        '每次请对熟悉性、愉悦性、主观强度和主观轻盈性评分。\n\n' ...
+            '每次请对主观强度、愉悦性、主观轻盈性和熟悉性评分。\n\n' ...
         '拖动屏幕上的评分条选择 0–100 分，确认后进入下一维度。\n' ...
         '气味呈现时：白色注视点后为黄色准备提示，再变绿时吸气。\n' ...
         '按 p 开始；随时按 ESC 可中止。']);
@@ -168,9 +167,9 @@ function drawFixation(window, color)
 end
 
 function score = rateDimension(window, odor, dimensionIdx, exitKey)
-    names = {'熟悉性', '愉悦性', '主观强度', '主观轻盈性'};
-    leftLabels = {'非常不熟悉', '非常不愉快', '非常弱', '非常沉闷'};
-    rightLabels = {'非常熟悉', '非常愉快', '非常强', '非常轻盈'};
+    names = {'主观强度', '愉悦性', '主观轻盈性', '熟悉性'};
+    leftLabels = {'非常弱', '非常不愉快', '非常沉闷', '非常不熟悉'};
+    rightLabels = {'非常强', '非常愉快', '非常轻盈', '非常熟悉'};
     score = 50;
     dragging = false;
     previousMouseDown = false;
@@ -283,7 +282,7 @@ function writeRatingsCsv(filename, subjectId, age, gender, ...
         error('Pretest:CsvOpenFailed', 'Could not open output CSV: %s', filename);
     end
     fileGuard = onCleanup(@() fclose(fid));
-    fprintf(fid, 'SubjectID,Age,Gender,Trial,Repeat,Odor,Familiarity,Valence,Intensity,Lightness,SessionStatus\n');
+    fprintf(fid, 'SubjectID,Age,Gender,Trial,Repeat,Odor,Intensity,Valence,Lightness,Familiarity,SessionStatus\n');
     repeatCounts = containers.Map({'CAR', 'GUA', 'CIN', 'PV'}, num2cell(zeros(1, 4)));
     for trialIdx = 1:completedTrials
         odor = trialOrder{trialIdx};
@@ -301,7 +300,7 @@ function filename = makeOutputPath(outputDir, subjectId)
     safeSubjectId = regexprep(subjectId, '[^A-Za-z0-9_-]', '_');
     timestamp = clock;
     milliseconds = floor(mod(now * 86400 * 1000, 1000));
-    baseName = sprintf('odor_pretest_%s_%04d%02d%02d_%02d%02d%02d_%03d', ...
+    baseName = sprintf('odor_rating_%s_%04d%02d%02d_%02d%02d%02d_%03d', ...
         safeSubjectId, timestamp(1), timestamp(2), timestamp(3), ...
         timestamp(4), timestamp(5), floor(timestamp(6)), milliseconds);
     filename = fullfile(outputDir, [baseName '.csv']);
